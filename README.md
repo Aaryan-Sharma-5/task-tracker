@@ -271,6 +271,6 @@ Import `backend/postman_collection.json` into Postman for ready-to-use API reque
 }
 ```
 
-## �‍ Author
+## Author
 
 Created as a demonstration of scalable REST API architecture with modern security practices.
