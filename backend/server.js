@@ -9,6 +9,7 @@ const config = require('./config/config');
 const logger = require('./utils/logger');
 const errorHandler = require('./middleware/errorHandler');
 const { specs, swaggerUi } = require('./config/swagger');
+const path = require('path');
 
 const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
@@ -72,6 +73,14 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     documentation: '/api-docs'
   });
+});
+
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+app.get('*', (req, res) => {
+  if (!req.path.startsWith('/api')) {
+    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+  }
 });
 
 // 404 handler
