@@ -6,6 +6,7 @@ const authService = {
     if (response.data.data.token) {
       localStorage.setItem('token', response.data.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.data.user));
+      window.dispatchEvent(new Event('authStateChanged'));
     }
     return response.data;
   },
@@ -15,6 +16,7 @@ const authService = {
     if (response.data.data.token) {
       localStorage.setItem('token', response.data.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.data.user));
+      window.dispatchEvent(new Event('authStateChanged'));
     }
     return response.data;
   },
@@ -22,6 +24,7 @@ const authService = {
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    window.dispatchEvent(new Event('authStateChanged'));
   },
 
   getCurrentUser: () => {

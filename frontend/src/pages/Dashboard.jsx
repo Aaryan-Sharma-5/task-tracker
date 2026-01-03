@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import taskService from '../services/taskService';
 import TaskModal from '../components/TaskModal';
@@ -15,13 +15,9 @@ const Dashboard = () => {
   });
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  useEffect(() => {
-    fetchTasks();
-    fetchStats();
-  }, [filters]);
-
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       const params = {};
       if (filters.status) params.status = filters.status;
@@ -31,30 +27,34 @@ const Dashboard = () => {
 
       const response = await taskService.getTasks(params);
       setTasks(response.data.tasks);
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch tasks');
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters.status, filters.priority, filters.page, filters.limit]);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const response = await taskService.getStats();
       setStats(response.data.stats);
-    } catch (error) {
+    } catch {
       console.error('Failed to fetch stats');
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchTasks();
+    fetchStats();
+  }, [refreshTrigger, fetchTasks, fetchStats]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
       try {
         await taskService.deleteTask(id);
         toast.success('Task deleted successfully');
-        fetchTasks();
-        fetchStats();
-      } catch (error) {
+        setRefreshTrigger(prev => prev + 1);
+      } catch {
         toast.error('Failed to delete task');
       }
     }
@@ -73,8 +73,7 @@ const Dashboard = () => {
   const handleModalClose = () => {
     setShowModal(false);
     setEditingTask(null);
-    fetchTasks();
-    fetchStats();
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const handleFilterChange = (e) => {

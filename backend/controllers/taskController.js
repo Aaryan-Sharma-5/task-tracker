@@ -6,8 +6,11 @@ const getTasks = async (req, res, next) => {
   try {
     const { status, priority, sort, page = 1, limit = 10 } = req.query;
 
-    // Build query
-    const query = { user: req.user.id };
+    const query = {};
+  
+    if (req.user.role !== 'admin') {
+      query.user = req.user.id;
+    }
 
     if (status) {
       query.status = status;
@@ -146,8 +149,14 @@ const deleteTask = async (req, res, next) => {
 
 const getTaskStats = async (req, res, next) => {
   try {
+    const matchCondition = {};
+    
+    if (req.user.role !== 'admin') {
+      matchCondition.user = req.user._id;
+    }
+
     const stats = await Task.aggregate([
-      { $match: { user: req.user._id } },
+      { $match: matchCondition },
       {
         $group: {
           _id: '$status',
